@@ -8,7 +8,6 @@
 **From the code.py file below is an Example**
 
 ```
-# EXAMPLE OF A WORKFLOW ENGINE THAT SENDS EMAIL AT A PARTICULAR TIME  BASED ON A CONDITION THAT SUSCRIBER IS IN THE LIST
 Lists('Dlion').create_list('EmailList')
 
 Triggers(user='Dlion').optIn('sussy1', 'EmailList')
@@ -24,7 +23,7 @@ process = Triggers(user='Dlion').time(
 WorkFlow(process).run()
 
 ```
-** EXPLANATION OF THE CODE ABOVE **
+**EXPLANATION OF THE CODE ABOVE**
 The line  ``` Lists('Dlion').create_list('EmailList') ``` creates a list called EmailList for user Dlion. This is pictured as that the user Dlion is trying to create a Workflow in which has a list(EmailList) which contains a set of suscribers
 
 The line ``` Triggers(user='Dlion').optIn('sussy1', 'EmailList')``` opts in sussy1 to the EmailList
