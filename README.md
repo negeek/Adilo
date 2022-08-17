@@ -34,7 +34,10 @@ So now we have a list and a suscriber in the list. We need to make things happen
 ```sendEmail = Actions().send_email(lst_name='EmailList', msg='Welcome suscriber to my workflow tutorial', user='Dlion',  condition=Conditions('Dlion')) ``` email is composed
                                  
 ``` delay = Actions().addDelay(dayList=[], timeList=[], next_action=sendEmail, minutes=1) ``` delay of 1 minute is added 
+
+
 ``` process = Triggers(user='Dlion').time(day=17, month=8, year=2022, hour=18, minute=31, timezone='Africa/Lagos', action=delay) ``` Email to be sent on 17/08/2022 at 18:31
+
 
 ```WorkFlow(process).run()``` performs the operations.
 
