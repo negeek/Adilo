@@ -1,7 +1,6 @@
 import pytz
 import datetime
 from datetime import date, timedelta
-import time
 
 # variable that acts as a database for list for a user account
 global List
@@ -27,13 +26,25 @@ class Triggers:
     def optIn(self, suscriber: str, lst_name: str):
         List[self.user][lst_name].append(suscriber)
 
-    def time(self, day: int, month: int, year: int, hour: int, minute: int, timezone: str, action):
-        dateTime = datetime.datetime.now(pytz.timezone(timezone))
-        today = date.today()
-        if date(year, month, day) < today:
-            raise Exception('put today or future date')
-        if today == date(year, month, day) and dateTime.hour == hour and dateTime.minute == minute:
-            action.run()
+    class time:
+        def __init__(self, day: int, month: int, year: int, hour: int, minute: int, timezone: str, action):
+            self.day = day
+            self.month = month
+            self.year = year
+            self.hour = hour
+            self.minute = minute
+            self.timezone = timezone
+            self.action = action
+
+        def run(self):
+            dateTime = datetime.datetime.now(pytz.timezone(self.timezone))
+            today = date.today()
+            if date(self.year, self.month, self.day) < today or dateTime.hour > self.hour or dateTime.minute > self.minute:
+                raise Exception('put today or future date and time')
+            while today < date(self.year, self.month, self.day) and dateTime.hour < self.hour and dateTime.minute < self.minute:
+                dateTime = datetime.datetime.now(pytz.timezone(self.timezone))
+                today = date.today()
+            self.action.run()
 
 
 class Actions:
@@ -64,15 +75,16 @@ class Actions:
 
         def run(self):
             if self.dayList == [] and self.minutes and self.timeList == []:
-                nowTime = datetime.now()
-                while nowTime != timedelta(minutes=self.minutes):
-                    nowTime = datetime.now()
+                nowTime = datetime.datetime.now()
+                executeTime = nowTime+timedelta(minutes=self.minutes)
+                while nowTime < executeTime:
+                    nowTime = datetime.datetime.now()
                 self.action.run()
             elif self.dayList != [] and self.timeList != [] and not self.minutes:
-                dt = datetime.now()
+                dt = datetime.datetime.now()
                 if dt.strftime('%A') in self.dayList:
                     while dt.hour < self.timeList[0] or dt.hour > self.timeList[2]:
-                        dt = datetime.now()
+                        dt = datetime.datetime.now()
                     self.action.run()
 
     class addRemove:
@@ -103,15 +115,25 @@ class Conditions:
         return False
 
 
-# EXAMPLE ON A WORKFLOW ENGINE THAT SENDS EMAIL AT A PARTICULAR TIME AND WAITS FOR A MINUTE BEFORE SENDING
+class WorkFlow:
+    def __init__(self, process):
+        self.process = process
+
+    def run(self):
+        self.process.run()
+
+
+# EXAMPLE OF A WORKFLOW ENGINE THAT SENDS EMAIL AT A PARTICULAR TIME  BASED ON A CONDITION THAT SUSCRIBER IS IN THE LIST
+Lists('Dlion').create_list('EmailList')
 
 Triggers(user='Dlion').optIn('sussy1', 'EmailList')
 
 sendEmail = Actions().send_email(lst_name='EmailList',
-                                 msg='Welcome suscriber to my workflow tutorial', user='Dlion', condition=Conditions())
-
+                                 msg='Welcome suscriber to my workflow tutorial', user='Dlion',  condition=Conditions('Dlion'))
 delay = Actions().addDelay(dayList=[], timeList=[],
-                           next_action=sendEmail, minutes=2)
+                           next_action=sendEmail, minutes=1)
 
-Triggers(user='Dlion').time(
-    day=17, month=8, year=2022, hour=18, minute=30, action=delay)
+process = Triggers(user='Dlion').time(
+    day=17, month=8, year=2022, hour=18, minute=31, timezone='Africa/Lagos', action=delay)
+
+WorkFlow(process).run()
